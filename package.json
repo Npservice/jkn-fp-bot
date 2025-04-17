@@ -22,6 +22,7 @@
 	},
 	"license": "MIT",
 	"dependencies": {
+		"jkn-fp-api": "file:",
 		"node-autoit-koffi": "^1.0.5"
 	},
 	"devDependencies": {

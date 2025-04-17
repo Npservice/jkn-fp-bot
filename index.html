@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <button onclick="openFingerprint()">BUTTON</button>
+
+    <script>
+        async function openFingerprint() {
+            const response = await fetch(`http://localhost:3000`, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    username: 'username-fp',
+                    password: 'password-fp',
+                    card_number: 'no-kartu-bpjs',
+                    exit: true, // wait window for exit (optional, default false)
+                    wait: 2_000 // wait for login to completed (optional, default 3_593)
+                })
+            });
+
+            if (response.ok) {
+                // Response OK setelah jendela aplikasi sidik jari ditutup
+            } else {
+                const result = await response.json();
+                alert(result.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
