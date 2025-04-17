@@ -1,13 +1,18 @@
 // @ts-check
 import bot from 'node-autoit-koffi';
 import { createServer } from 'node:http';
-import qs from 'node:querystring';
 import pkg from './package.json' assert { type: 'json' };
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const host = `127.0.0.1`; // bind the server to the loopback interface so we don't expose it
-const port = Number(process.env.SERVER_PORT) || 3000;
-const fp_win_title = process.env.FP_WIN_TITLE || 'Aplikasi Registrasi Sidik Jari';
-const fp_ins_path = process.env.FP_INS_PATH || 'C:\\Program Files (x86)\\BPJS Kesehatan\\Aplikasi Sidik Jari BPJS Kesehatan\\After.exe';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const host = `0.0.0.0`; // bind the server to the loopback interface so we don't expose it
+const port = 3000;
+const fp_win_title = 'Aplikasi Verifikasi dan Registrasi Sidik Jari';
+const fp_ins_path = path.join(__dirname, 'finger', 'After.exe');
+
 
 const server = createServer((req, res) => {
 	// allow cors
@@ -25,7 +30,9 @@ const server = createServer((req, res) => {
 	 * @param {number} status
 	 * @param {any =} data
 	 */
+
 	function json(status, data) {
+		console.log(data);
 		res.writeHead(status, { 'Content-Type': 'application/json' });
 		if (!data) return res.end();
 		res.end(JSON.stringify(data));
@@ -36,24 +43,24 @@ const server = createServer((req, res) => {
 		if (url.pathname === '/' && req.method === 'GET') {
 			// service info
 			json(200, { message: pkg.description });
-		} else if (url.pathname === '/' && req.method === 'POST') {
+		} else if (url.pathname === '/api/data' && req.method === 'POST') {
 			// apm bot service
 			let body = '';
 			req.on('data', (chunk) => (body += chunk.toString()));
 			req.on('end', () => {
-				const form_data = qs.parse(body);
-				const username = form_data['username'];
-				const password = form_data['password'];
-				const card_number = form_data['card_number'];
+				const form_data = JSON.parse(body);
+				const username = 'rsmitradelima';
+				const password = 'Mitra444*';
+				const card_number = form_data['bpjs'];
 				const exit = form_data['exit'] === 'true';
 				const wait = form_data['wait'];
+				console.log(form_data['bpjs']);
 
 				if (!username || !password || !card_number) {
 					return json(400, {
 						message: `username, password, and card_number are required fields`
 					});
 				}
-
 				run_bot({ username, password, card_number, exit, wait })
 					.then(() => json(201))
 					.catch((e) => handle_error(e));
@@ -62,6 +69,7 @@ const server = createServer((req, res) => {
 			json(404, { message: `Not found` });
 		}
 	} catch (error) {
+
 		handle_error(error);
 	}
 });
@@ -83,6 +91,8 @@ function delay(ms) {
 async function run_bot({ username, password, card_number, exit, wait }) {
 	// open or activate the application window
 	const already_open = await bot.winExists(fp_win_title);
+	// console.log(fp_ins_path);
+
 	if (!already_open) {
 		await bot.run(fp_ins_path);
 		await bot.winWait(fp_win_title); // wait for the application window to appear
@@ -91,6 +101,8 @@ async function run_bot({ username, password, card_number, exit, wait }) {
 	await bot.winActivate(fp_win_title); // activate the application window
 	await bot.winWaitActive(fp_win_title); // wait for the application to be in focus
 
+
+	// return;
 	if (exit) {
 		await bot.winSetOnTop(fp_win_title, '', 1); // set window on top
 	}
