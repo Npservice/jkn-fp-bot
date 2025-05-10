@@ -4,6 +4,8 @@ import { createServer } from 'node:http';
 import pkg from './package.json' assert { type: 'json' };
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +15,8 @@ const port = 3000;
 const fp_win_title = 'Aplikasi Verifikasi dan Registrasi Sidik Jari';
 const fp_ins_path = path.join(__dirname, 'finger', 'After.exe');
 
+const username = process.env.USERNAME_FINGER;
+const password = process.env.PASSWORD_FINGER;
 
 const server = createServer((req, res) => {
 	// allow cors
@@ -49,8 +53,7 @@ const server = createServer((req, res) => {
 			req.on('data', (chunk) => (body += chunk.toString()));
 			req.on('end', () => {
 				const form_data = JSON.parse(body);
-				const username = 'rsmitradelima';
-				const password = 'Mitra444*';
+
 				const card_number = form_data['bpjs'];
 				const exit = form_data['exit'] === 'true';
 				const wait = form_data['wait'];
